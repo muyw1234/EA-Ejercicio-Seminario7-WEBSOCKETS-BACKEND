@@ -9,12 +9,34 @@ export class MensajeService {
         this.io = io;
     }
 
+    //key: socket.id
+    private usuariosConectados = new Map<string, { userId: string, userName: string }>(); 
     /**
      * Inicializa los listeners de Socket.io
      */
     public inicializarSockets(): void {
         this.io.on('connection', (socket: Socket) => {
             Logging.info(`Socket conectado: ${socket.id}`);
+            
+            // al conectarse, el cliente envia su información y la guardamos en el Map
+            socket.on('usr_conectado', (data: { userId: string, userName: string }) => {
+                Logging.info(`Usuario conectado: ${data.userName} (${data.userId})`);
+                this.usuariosConectados.set(socket.id, { userId: data.userId, userName: data.userName });
+                this.enviarUsuariosConectados();
+            });
+
+            // al desconectarse, eliminamos su información del Map
+            socket.on('disconnect', () => {
+                const usuario = this.usuariosConectados.get(socket.id);
+                if (usuario) {
+                    Logging.info(`Usuario desconectado: ${usuario.userName} (${usuario.userId})`);
+                    this.usuariosConectados.delete(socket.id);
+                    this.enviarUsuariosConectados();
+                } else {
+                    Logging.info(`Socket desconectado sin usuario registrado: ${socket.id}`);
+                }
+            });
+
 
             /* 
             // Unirse a una sala de organización (DESACTIVADO PARA CHAT GLOBAL)
@@ -70,6 +92,12 @@ export class MensajeService {
             });
         });
     }
+
+    public enviarUsuariosConectados(): void {
+        const lista = Array.from(this.usuariosConectados.values());
+        this.io.emit('update-user-list', lista);
+    }
+
 
     /**
      * Guarda un nuevo mensaje en la base de datos
