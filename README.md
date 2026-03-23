@@ -6,6 +6,11 @@ Esta es la rama **`socket_io`**, que contiene la implementación base necesaria 
 
 ---
 
+## Uso de la IA
+- No se ha usado la IA para este parte de ejercicio
+
+---
+
 ## 🎯 Objetivo de la Clase
 
 En la aplicación de Chat con la que hemos estado trabajando, el objetivo de hoy es implementar diferentes funcionalidades interactivas en tiempo real:
